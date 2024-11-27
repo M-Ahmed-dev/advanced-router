@@ -1,7 +1,11 @@
-import { useState } from 'react';
 import { Form, redirect, useActionData, useNavigation } from 'react-router-dom';
 import { createOrder } from '../../services/apiRestaurant';
 import Button from '../../ui/Button';
+import { useSelector } from 'react-redux';
+import { clearCart, getCart, getTotalPrice } from '../cart/cartSlice';
+import store from '../../store';
+import EmptyCart from '../cart/EmptyCart';
+import { formatCurrency } from '../../utils/helpers';
 
 // https://uibakery.io/regex-library/phone-number
 const isValidPhone = (str) =>
@@ -36,21 +40,27 @@ const fakeCart = [
 function CreateOrder() {
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
-
+  const userName = useSelector((state) => state.user.username);
+  const cartData = useSelector(getCart);
   const formErrors = useActionData();
+  const totalPrice = useSelector(getTotalPrice);
 
-  // const [withPriority, setWithPriority] = useState(false);
-  const cart = fakeCart;
+  if (!cartData.length) return <EmptyCart />;
 
   return (
     <div className="px-4 py-6">
       <h2 className="mb-8 text-xl font-semibold">Ready to order? Let's go!</h2>
-
       {/* <Form method="POST" action="/order/new"> */}
       <Form method="POST">
         <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center">
           <label className="sm:basis-40">First Name</label>
-          <input className="input grow" type="text" name="customer" required />
+          <input
+            className="input grow"
+            defaultValue={userName}
+            type="text"
+            name="customer"
+            required
+          />
         </div>
 
         <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -92,10 +102,13 @@ function CreateOrder() {
         </div>
 
         <div>
-          <input type="hidden" name="cart" value={JSON.stringify(cart)} />
+          <input type="hidden" name="cart" value={JSON.stringify(cartData)} />
           <Button disabled={isSubmitting} type="primary">
-            {isSubmitting ? 'Placing order....' : 'Order now'}
+            {isSubmitting ? 'Placing order for....' : 'Order now'}{' '}
+            {formatCurrency(totalPrice)} pizzas
           </Button>
+
+          <div></div>
         </div>
       </Form>
     </div>
@@ -112,6 +125,8 @@ export async function action({ request }) {
     priority: data.priority === 'on',
   };
 
+  console.log(data);
+
   const errors = {};
   if (!isValidPhone(order.phone))
     errors.phone =
@@ -123,6 +138,7 @@ export async function action({ request }) {
 
   const newOrder = await createOrder(order);
 
+  store.dispatch(clearCart());
   return redirect(`/order/${newOrder.id}`);
 }
 

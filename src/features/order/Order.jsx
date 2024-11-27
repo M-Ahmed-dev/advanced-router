@@ -9,6 +9,8 @@ import {
   formatCurrency,
   formatDate,
 } from '../../utils/helpers';
+import { getCart } from '../cart/cartSlice';
+import { useSelector } from 'react-redux';
 
 function Order() {
   const order = useLoaderData();
@@ -25,9 +27,13 @@ function Order() {
   } = order;
 
   const deliveryIn = calcMinutesLeft(estimatedDelivery);
+  const cartData = useSelector(getCart);
+  const user = useSelector((state) => state.user);
 
   return (
     <div className="space-y-8 px-4 py-6">
+      {JSON.stringify(user)}
+
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-xl font-semibold">Order #{id} status</h2>
 
