@@ -1,7 +1,13 @@
 import { useDispatch, useSelector } from 'react-redux';
 import Button from '../../ui/Button';
 import { formatCurrency } from '../../utils/helpers';
-import { addItem, getCurrentQuantity } from '../cart/cartSlice';
+import {
+  addItem,
+  decreaseItemQuantity,
+  getCurrentQuantity,
+  getTotalQuantity,
+  increaseItemQuantity,
+} from '../cart/cartSlice';
 import { DeleteButton } from '../cart/CartItem';
 import UpdateCartQuantity from '../cart/UpdateCartQuantity';
 
@@ -44,7 +50,25 @@ function MenuItem({ pizza }) {
           )}
 
           {currentQuantity ? (
-            <DeleteButton pizzaId={id}>Delete from cart</DeleteButton>
+            <div className="flex gap-3">
+              <DeleteButton pizzaId={id}>Delete from cart</DeleteButton>
+
+              <div className="flex gap-2">
+                <Button
+                  type="round"
+                  onClick={() => dispatch(decreaseItemQuantity(id))}
+                >
+                  -
+                </Button>
+                <span>{currentQuantity}</span>
+                <Button
+                  type="round"
+                  onClick={() => dispatch(increaseItemQuantity(id))}
+                >
+                  +
+                </Button>
+              </div>
+            </div>
           ) : (
             !soldOut && (
               <div className="flex items-center gap-5">
